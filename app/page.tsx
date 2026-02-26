@@ -1,82 +1,69 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { supabase } from "./lib/supabaseClient";
-
-type DeviceListing = {
-  id: string;
-  name: string;
-  device_type: string | null;
-  description: string | null;
-  size_notes: string | null;
-  city: string | null;
-  created_at: string;
-};
-
 export default function Home() {
-  const [q, setQ] = useState("");
-  const [rows, setRows] = useState<DeviceListing[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  async function runSearch(query: string) {
-    setLoading(true);
-    let s = supabase
-      .from("device_listing")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (query.trim()) {
-      const esc = query.replaceAll("%", "\\%").replaceAll("_", "\\_");
-      s = s.or(
-        `name.ilike.%${esc}%,description.ilike.%${esc}%,device_type.ilike.%${esc}%,city.ilike.%${esc}%`
-      );
-    }
-
-    const { data, error } = await s.limit(50);
-    if (!error) setRows((data ?? []) as DeviceListing[]);
-    setLoading(false);
-  }
-
-  useEffect(() => {
-    runSearch("");
-  }, []);
-
   return (
-    <main style={{ maxWidth: 900, margin: "40px auto", padding: 16, fontFamily: "sans-serif" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
-        <h1>Rehab Device Finder</h1>
-        <Link href="/login">Login</Link>
+    <main
+      style={{
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        textAlign: "center",
+        padding: "40px"
+      }}
+    >
+      <h1
+        style={{
+          fontSize: "44px",
+          color: "#006747",
+          marginBottom: "10px"
+        }}
+      >
+        CSU Rehabilitation Device Directory
+      </h1>
+
+      <p style={{ fontSize: "18px", color: "#555", marginBottom: "50px" }}>
+        A centralized platform for searching and managing rehabilitation equipment.
+      </p>
+
+      <div>
+        <a href="/login">
+          <button style={buttonStyle}>Sign In</button>
+        </a>
+
+        <a href="/signup">
+          <button style={buttonStyleSecondary}>Create Account</button>
+        </a>
+
+        <a href="/search">
+          <button style={buttonStyle}>Search Devices</button>
+        </a>
       </div>
 
-      <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-        <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Search: hand, ankle, small, Cleveland..."
-          style={{ flex: 1, padding: 10, fontSize: 16 }}
-        />
-        <button onClick={() => runSearch(q)} style={{ padding: "10px 14px", fontSize: 16 }}>
-          Search
-        </button>
-      </div>
-
-      {loading ? <p>Loading…</p> : <p style={{ marginTop: 12 }}>{rows.length} results</p>}
-
-      <ul style={{ marginTop: 12, padding: 0, listStyle: "none" }}>
-        {rows.map((d) => (
-          <li key={d.id} style={{ border: "1px solid #ddd", borderRadius: 10, padding: 12, marginBottom: 10 }}>
-            <div style={{ fontWeight: 700 }}>{d.name}</div>
-            <div style={{ opacity: 0.8 }}>
-              {d.device_type || "—"} {d.city ? `• ${d.city}` : ""}
-            </div>
-            <div style={{ marginTop: 6 }}>{d.description || ""}</div>
-            {d.size_notes ? (
-              <div style={{ marginTop: 6, fontStyle: "italic" }}>Size: {d.size_notes}</div>
-            ) : null}
-          </li>
-        ))}
-      </ul>
+      <p style={{ marginTop: "30px", color: "#666", fontSize: "15px" }}>
+        Existing users may sign in. New users can create an account to add and manage devices.
+      </p>
     </main>
   );
 }
+
+const buttonStyle = {
+  padding: "16px 36px",
+  fontSize: "18px",
+  margin: "12px",
+  backgroundColor: "#006747",
+  color: "white",
+  border: "none",
+  borderRadius: "8px",
+  cursor: "pointer"
+};
+
+const buttonStyleSecondary = {
+  padding: "16px 36px",
+  fontSize: "18px",
+  margin: "12px",
+  backgroundColor: "white",
+  color: "#006747",
+  border: "2px solid #006747",
+  borderRadius: "8px",
+  cursor: "pointer"
+};

@@ -4,17 +4,20 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../lib/supabaseClient";
 
-export default function LoginPage() {
+export default function SignupPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [msg, setMsg] = useState("");
 
-  async function signIn() {
-    setMsg("Signing in...");
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+  async function signUp() {
+    setMsg("Creating account...");
+    const { error } = await supabase.auth.signUp({ email, password });
     if (error) return setMsg("Error: " + error.message);
-    router.push("/add-device");
+
+    setMsg("Account created! Please check your email (if required), then sign in.");
+    // Optionally redirect to login:
+    // router.push("/login");
   }
 
   return (
@@ -44,11 +47,11 @@ export default function LoginPage() {
             marginBottom: "8px"
           }}
         >
-          CSU Rehab Directory
+          Create Account
         </h2>
 
         <p style={{ textAlign: "center", color: "#555", marginBottom: "24px" }}>
-          Sign in to add and manage device listings.
+          CSU Rehabilitation Device Directory
         </p>
 
         <label>Email</label>
@@ -66,12 +69,16 @@ export default function LoginPage() {
           onChange={(e) => setPassword(e.target.value)}
         />
 
-        <button style={primaryButton} onClick={signIn}>
-          Sign In
+        <button style={primaryButton} onClick={signUp}>
+          Create Account
         </button>
 
         <button style={linkButton} onClick={() => router.push("/")}>
           ← Back to Home
+        </button>
+
+        <button style={linkButton} onClick={() => router.push("/login")}>
+          Already have an account? Sign in
         </button>
 
         {msg && <p style={{ marginTop: "12px", fontSize: "14px" }}>{msg}</p>}
