@@ -14,7 +14,7 @@ export default function LoginPage() {
     setMsg("Signing in...");
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return setMsg("Error: " + error.message);
-    router.push("/add-device");
+    router.push("/dashboard");
   }
 
   return (
