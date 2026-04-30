@@ -24,10 +24,7 @@ export default function HomePage() {
 
   setResults(data || []);
 }
-function handleSearch() {
-  setHasSearched(true);
-  setResults([]);
-}
+
 
 
 function toggleListening() {
