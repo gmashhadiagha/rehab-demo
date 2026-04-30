@@ -1,17 +1,56 @@
 "use client";
 
 import { useState } from "react";
+import { supabase } from "./lib/supabaseClient";
 
 export default function HomePage() {
   const [smartInput, setSmartInput] = useState("");
   const [results, setResults] = useState<any[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
 
-  function handleSearch() {
-    setHasSearched(true);
-    // mock results for now
+  async function handleSearch() {
+  setHasSearched(true);
+
+  const { data, error } = await supabase
+    .from("device_listing")
+    .select("*")
+    .ilike("name", `%${smartInput}%`);
+
+  if (error) {
+    console.error(error);
     setResults([]);
+    return;
   }
+
+  setResults(data || []);
+}
+function handleSearch() {
+  setHasSearched(true);
+  setResults([]);
+}
+
+
+function toggleListening() {
+    const SpeechRec =
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
+
+    if (!SpeechRec) {
+      alert("Speech not supported");
+      return;
+    }
+
+    const recognition = new SpeechRec();
+
+    recognition.onresult = (e: any) => {
+      const transcript = e.results[0][0].transcript;
+      setSmartInput(transcript);
+    };
+
+    recognition.start();
+  }
+
+  
 
   return (
     <main style={styles.page}>
@@ -32,7 +71,9 @@ export default function HomePage() {
                 standers, gait trainers, or adaptive bikes.
               </p>
 
-              <button style={styles.micBtn}>🎤 Speak</button>
+              <button onClick={toggleListening} style={styles.micBtn}>
+            🎤 Speak
+          </button>
             </div>
           </section>
 
