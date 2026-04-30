@@ -126,33 +126,39 @@ function toggleListening() {
             )}
 
             {results.length > 0 && (
-              <div>
+              <div style={styles.resultsGrid}>
                 {results.map((device) => (
                   <div key={device.id} style={styles.resultCard}>
-                    {device.image_url && (
+                    {device.image_url ? (
                       <img
                         src={device.image_url}
                         alt={device.name}
-                        style={{
-                          width: "100%",
-                          maxHeight: "180px",
-                          objectFit: "cover",
-                          borderRadius: "12px",
-                          marginBottom: "10px",
-                        }}
+                        style={styles.resultImage}
                       />
+                    ) : (
+                      <div style={styles.noImage}>No image available</div>
                     )}
 
-          <h3>{device.name}</h3>
-          <p><strong>Type:</strong> {device.device_type}</p>
-          <p><strong>City:</strong> {device.city}</p>
-          <p><strong>Condition:</strong> {device.condition}</p>
-          <p>{device.description}</p>
-        </div>
-      ))}
-    </div>
-  )}
-</section>
+                    <h3 style={styles.resultTitle}>{device.name}</h3>
+
+                    <p>
+                      <strong>Type:</strong> {device.device_type}
+                    </p>
+
+                    <p>
+                      <strong>City:</strong> {device.city}
+                    </p>
+
+                    <p>
+                      <strong>Condition:</strong> {device.condition}
+                    </p>
+
+                    <p>{device.description}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
 
         </div>
 
@@ -248,7 +254,51 @@ const styles: Record<string, React.CSSProperties> = {
   },
 
   resultsSection: {
-    marginTop: "10px",
+    width: "100%",
+    padding: "40px 60px",
+    backgroundColor: "#f7fff9",
+  },
+
+  resultsGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+    gap: "24px",
+    width: "100%",
+  },
+  resultCard: {
+    backgroundColor: "white",
+    border: "2px solid #006747",
+    borderRadius: "18px",
+    padding: "18px",
+    boxShadow: "0 6px 16px rgba(0,0,0,0.12)",
+  },
+
+  resultImage: {
+    width: "100%",
+    height: "190px",
+    objectFit: "contain",
+    borderRadius: "12px",
+    marginBottom: "12px",
+    backgroundColor: "#f5f5f5",
+  },
+
+  noImage: {
+    width: "100%",
+    height: "190px",
+    borderRadius: "12px",
+    marginBottom: "12px",
+    backgroundColor: "#eef5ef",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "#555",
+    fontWeight: "bold",
+  },
+
+  resultTitle: {
+    color: "#006747",
+    fontSize: "22px",
+    marginBottom: "10px",
   },
 
   emptyText: {
