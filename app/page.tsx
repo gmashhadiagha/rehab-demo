@@ -1,76 +1,192 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { supabase } from "./lib/supabaseClient";
+import { useState } from "react";
 
 export default function HomePage() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
+  const [smartInput, setSmartInput] = useState("");
+  const [results, setResults] = useState<any[]>([]);
+  const [hasSearched, setHasSearched] = useState(false);
 
-  useEffect(() => {
-    async function checkUser() {
-      const { data } = await supabase.auth.getUser();
-
-      if (data?.user) {
-        setUser(data.user);
-        router.push("/dashboard"); // 👈 redirect if logged in
-      } else {
-        setLoading(false);
-      }
-    }
-
-    checkUser();
-  }, [router]);
-
-  if (loading) {
-    return <main style={{ padding: "40px" }}>Loading...</main>;
+  function handleSearch() {
+    setHasSearched(true);
+    // mock results for now
+    setResults([]);
   }
 
   return (
-    <main style={{ textAlign: "center", padding: "80px" }}>
-      <h1 style={{ fontSize: "40px", color: "#006747" }}>
-        CSU Rehabilitation Device Directory
-      </h1>
+    <main style={styles.page}>
+      <div style={styles.heroRow}>
+        
+        {/* LEFT SIDE LOGO */}
+        <div style={styles.logoWrapper}>
+          <img src="/logo.png" alt="Move & Play" style={styles.mainLogo} />
+        </div>
 
-      <p style={{ marginTop: "20px", fontSize: "18px" }}>
-        A centralized platform for searching and managing rehabilitation equipment.
-      </p>
+        {/* RIGHT SIDE SEARCH */}
+        <div style={styles.container}>
+          {/* Assistant Box */}
+          <section style={styles.assistantBox}>
+            <div style={styles.assistantTop}>
+              <p style={styles.bubbleText}>
+                Search for pediatric rehabilitation equipment like walkers,
+                standers, gait trainers, or adaptive bikes.
+              </p>
 
-      <div style={{ marginTop: "40px" }}>
-        <button onClick={() => router.push("/login")} style={btn}>
-          Sign In
-        </button>
+              <button style={styles.micBtn}>🎤 Speak</button>
+            </div>
+          </section>
 
-        <button onClick={() => router.push("/signup")} style={btnOutline}>
-          Create Account
-        </button>
+          {/* Search */}
+          <section style={styles.searchSection}>
+            <div style={styles.inputRow}>
+              <input
+                style={styles.bigInput}
+                placeholder="Search by device, category, or city..."
+                value={smartInput}
+                onChange={(e) => setSmartInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSearch();
+                }}
+              />
 
-        <button onClick={() => router.push("/search")} style={btn}>
-          Search Devices
-        </button>
+              <button onClick={handleSearch} style={styles.findBtn}>
+                SEARCH
+              </button>
+            </div>
+          </section>
+
+          {/* Results */}
+          <section style={styles.resultsSection}>
+            {hasSearched && results.length === 0 && (
+              <p style={styles.emptyText}>
+                No matching devices found. Try “walker,” “stander,” or “Cleveland.”
+              </p>
+            )}
+          </section>
+
+        </div>
+
+        {/* RIGHT SIDE LOGO */}
+  
+
       </div>
+
+      {/* FOOTER */}
+      <footer style={styles.innerFooter}>
+        © 2026 Cleveland State University Rehabilitation Technology Initiative
+      </footer>
     </main>
   );
 }
 
-const btn = {
-  margin: "10px",
-  padding: "12px 25px",
-  backgroundColor: "#006747",
-  color: "white",
-  border: "none",
-  borderRadius: "6px",
-  cursor: "pointer",
-};
+const styles: Record<string, React.CSSProperties> = {
+  page: {
+    minHeight: "100vh",
+    backgroundColor: "#006747",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+  },
 
-const btnOutline = {
-  margin: "10px",
-  padding: "12px 25px",
-  backgroundColor: "white",
-  color: "#006747",
-  border: "2px solid #006747",
-  borderRadius: "6px",
-  cursor: "pointer",
+  heroRow: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: "60px",
+    maxWidth: "1300px",
+    marginTop: "60px",
+  },
+
+  container: {
+    width: "650px",
+    backgroundColor: "#fff",
+    borderRadius: "30px",
+    padding: "40px",
+    border: "6px solid #E5A823",
+    boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
+  },
+
+  assistantBox: {
+    display: "flex",
+    alignItems: "center",
+    gap: "15px",
+    padding: "20px",
+    border: "3px solid #006747",
+    borderRadius: "20px",
+    marginBottom: "20px",
+  },
+
+  bubbleText: {
+    fontSize: "15px",
+    fontWeight: 500,
+  },
+
+  micBtn: {
+    backgroundColor: "#006747",
+    color: "white",
+    border: "none",
+    borderRadius: "10px",
+    padding: "10px 16px",
+    cursor: "pointer",
+    fontWeight: 700,
+  },
+
+  searchSection: {
+    marginBottom: "20px",
+  },
+
+  inputRow: {
+    display: "flex",
+    gap: "10px",
+  },
+
+  bigInput: {
+    flex: 1,
+    padding: "12px",
+    borderRadius: "10px",
+    border: "2px solid #ccc",
+  },
+
+  findBtn: {
+    backgroundColor: "#006747",
+    color: "white",
+    border: "none",
+    borderRadius: "10px",
+    padding: "12px 18px",
+    fontWeight: 700,
+    cursor: "pointer",
+  },
+
+  resultsSection: {
+    marginTop: "10px",
+  },
+
+  emptyText: {
+    textAlign: "center",
+    color: "#666",
+  },
+
+  logoWrapper: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  mainLogo: {
+    width: "1000px",
+    height: "auto",
+  },
+
+  innerFooter: {
+    marginTop: "50px",
+    marginBottom: "10px",
+    color: "#f4b400",
+    fontSize: "13px",
+  },
+  assistantTop: {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  gap: "20px",
+},
 };

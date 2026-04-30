@@ -1,213 +1,130 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabaseClient";
+import { useParams, useRouter } from "next/navigation";
 
 export default function EditDevicePage() {
-  const router = useRouter();
   const params = useParams();
-  const deviceId = params.id as string;
+  const router = useRouter();
+  const id = params.id as string;
+
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    availability_status: "available",
+  });
 
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [msg, setMsg] = useState("");
-
-  const [name, setName] = useState("");
-  const [deviceType, setDeviceType] = useState("");
-  const [description, setDescription] = useState("");
-  const [sizeNotes, setSizeNotes] = useState("");
-  const [city, setCity] = useState("");
-  const [condition, setCondition] = useState("");
-  const [availabilityStatus, setAvailabilityStatus] = useState("available");
-  const [ageRange, setAgeRange] = useState("");
 
   useEffect(() => {
-    async function loadDevice() {
-      const { data: authData } = await supabase.auth.getUser();
+    if (id) fetchDevice();
+  }, [id]);
 
-      if (!authData?.user) {
-        router.push("/login");
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from("device_listing")
-        .select("*")
-        .eq("id", deviceId)
-        .single();
-
-      if (error || !data) {
-        setMsg("Could not load device.");
-        setLoading(false);
-        return;
-      }
-
-      setName(data.name || "");
-      setDeviceType(data.device_type || "");
-      setDescription(data.description || "");
-      setSizeNotes(data.size_notes || "");
-      setCity(data.city || "");
-      setCondition(data.condition || "");
-      setAvailabilityStatus(data.availability_status || "available");
-      setAgeRange(data.age_range || "");
-      setLoading(false);
-    }
-
-    if (deviceId) {
-      loadDevice();
-    }
-  }, [deviceId, router]);
-
-  async function updateDevice() {
-    setSaving(true);
-    setMsg("");
-
-    const { error } = await supabase
+  async function fetchDevice() {
+    const { data, error } = await supabase
       .from("device_listing")
-      .update({
-        name,
-        device_type: deviceType,
-        description,
-        size_notes: sizeNotes,
-        city,
-        condition,
-        availability_status: availabilityStatus,
-        age_range: ageRange,
-      })
-      .eq("id", deviceId);
-
-    setSaving(false);
+      .select("*")
+      .eq("id", id)
+      .single();
 
     if (error) {
-      setMsg("Error updating device.");
+      alert("Error loading device: " + error.message);
+      setLoading(false);
       return;
     }
 
-    router.push("/dashboard");
+    setFormData({
+      name: data.name || "",
+      description: data.description || "",
+      availability_status: data.availability_status || "available",
+    });
+
+    setLoading(false);
+  }
+
+  async function updateDevice() {
+    const { error } = await supabase
+      .from("device_listing")
+      .update(formData)
+      .eq("id", id);
+
+    if (error) {
+      alert("Update failed: " + error.message);
+      return;
+    }
+
+    alert("Device updated!");
+    router.push("/my-account"); // ✅ FIXED
   }
 
   if (loading) {
-    return <main style={{ padding: "40px" }}>Loading device...</main>;
+    return <p style={{ padding: "30px" }}>Loading...</p>;
   }
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        backgroundColor: "#f4f9f6",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: "30px",
-      }}
-    >
-      <div
-        style={{
-          backgroundColor: "white",
-          padding: "40px",
-          borderRadius: "10px",
-          width: "100%",
-          maxWidth: "550px",
-          boxShadow: "0 5px 20px rgba(0,0,0,0.1)",
-        }}
+    <main style={{ padding: "30px" }}>
+      <h1 style={{ color: "#006747" }}>Edit Device</h1>
+
+      <input
+        type="text"
+        placeholder="Device Name"
+        value={formData.name}
+        onChange={(e) =>
+          setFormData({ ...formData, name: e.target.value })
+        }
+        style={styles.input}
+      />
+
+      <textarea
+        placeholder="Description"
+        value={formData.description}
+        onChange={(e) =>
+          setFormData({ ...formData, description: e.target.value })
+        }
+        style={styles.input}
+      />
+
+      {/* ✅ FIXED SELECT */}
+      <select
+        style={styles.input}
+        value={formData.availability_status}
+        onChange={(e) =>
+          setFormData({
+            ...formData,
+            availability_status: e.target.value,
+          })
+        }
       >
-        <h2 style={{ color: "#006747", marginBottom: "20px" }}>Edit Device</h2>
+        <option value="available">Available</option>
+        <option value="pending">Pending</option>
+        <option value="unavailable">Unavailable</option>
+        <option value="donated">Donated</option>
+      </select>
 
-        <input
-          placeholder="Device name"
-          style={inputStyle}
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-
-        <input
-          placeholder="Device type"
-          style={inputStyle}
-          value={deviceType}
-          onChange={(e) => setDeviceType(e.target.value)}
-        />
-
-        <textarea
-          placeholder="Description"
-          style={{ ...inputStyle, minHeight: "90px" }}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-
-        <input
-          placeholder="Size notes"
-          style={inputStyle}
-          value={sizeNotes}
-          onChange={(e) => setSizeNotes(e.target.value)}
-        />
-
-        <input
-          placeholder="City"
-          style={inputStyle}
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
-        />
-
-        <select
-          style={inputStyle}
-          value={condition}
-          onChange={(e) => setCondition(e.target.value)}
-        >
-          <option value="">Select condition</option>
-          <option value="new">New</option>
-          <option value="excellent">Excellent</option>
-          <option value="good">Good</option>
-          <option value="fair">Fair</option>
-          <option value="used">Used</option>
-        </select>
-
-        <select
-          style={inputStyle}
-          value={availabilityStatus}
-          onChange={(e) => setAvailabilityStatus(e.target.value)}
-        >
-          <option value="available">Available</option>
-          <option value="pending">Pending</option>
-          <option value="unavailable">Unavailable</option>
-          <option value="donated">Donated</option>
-          <option value="sold">Sold</option>
-        </select>
-
-        <input
-          placeholder="Age range"
-          style={inputStyle}
-          value={ageRange}
-          onChange={(e) => setAgeRange(e.target.value)}
-        />
-
-        <button
-          onClick={updateDevice}
-          disabled={saving}
-          style={{
-            width: "100%",
-            padding: "12px",
-            backgroundColor: "#006747",
-            color: "white",
-            border: "none",
-            borderRadius: "6px",
-            cursor: "pointer",
-          }}
-        >
-          {saving ? "Saving..." : "Update Device"}
-        </button>
-
-        {msg && <p style={{ marginTop: "12px", color: "#900" }}>{msg}</p>}
-      </div>
+      <button onClick={updateDevice} style={styles.button}>
+        Save Changes
+      </button>
     </main>
   );
 }
 
-const inputStyle = {
-  width: "100%",
-  padding: "10px",
-  marginBottom: "12px",
-  borderRadius: "6px",
-  border: "1px solid #ccc",
-  fontSize: "16px",
+const styles = {
+  input: {
+    display: "block",
+    width: "100%",
+    maxWidth: "500px",
+    padding: "12px",
+    marginBottom: "12px",
+    borderRadius: "8px",
+    border: "1px solid #ccc",
+  },
+  button: {
+    background: "#006747",
+    color: "white",
+    border: "none",
+    borderRadius: "10px",
+    padding: "10px 16px",
+    cursor: "pointer",
+  },
 };

@@ -1,237 +1,229 @@
 "use client";
 
-import { ChangeEvent, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 
 export default function AddDevicePage() {
-  const router = useRouter();
-
-  const [userId, setUserId] = useState<string | null>(null);
-  const [msg, setMsg] = useState("");
-
   const [name, setName] = useState("");
-  const [deviceType, setDeviceType] = useState("");
   const [description, setDescription] = useState("");
-  const [sizeNotes, setSizeNotes] = useState("");
+  const [image, setImage] = useState<File | null>(null);
+  const [preview, setPreview] = useState("");
+  const [message, setMessage] = useState("");
+  const [deviceType, setDeviceType] = useState("");
   const [city, setCity] = useState("");
   const [condition, setCondition] = useState("");
-  const [availabilityStatus, setAvailabilityStatus] = useState("available");
+  const [manufacturer, setManufacturer] = useState("");
+  const [modelNumber, setModelNumber] = useState("");
   const [ageRange, setAgeRange] = useState("");
+  const [weightLimit, setWeightLimit] = useState("");
+  const [availabilityStatus, setAvailabilityStatus] = useState("");
+  const [pickupNotes, setPickupNotes] = useState("");
+  const [contactMethod, setContactMethod] = useState("");
 
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  useEffect(() => {
-    const checkUser = async () => {
-      const { data } = await supabase.auth.getUser();
-
-      if (!data?.user) {
-        router.push("/login");
-        return;
-      }
-
-      setUserId(data.user.id);
-    };
-
-    checkUser();
-  }, [router]);
-
-  function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setImageFile(file);
-      setPreview(URL.createObjectURL(file));
-    }
+    setImage(file);
+    setPreview(URL.createObjectURL(file));
   }
 
-  async function addDevice() {
-    if (!userId) {
-      setMsg("Not logged in.");
-      return;
-    }
-
-    if (!name.trim()) {
-      setMsg("Device name is required.");
-      return;
-    }
-
-    setLoading(true);
-    setMsg("Saving...");
+  async function handleAddDevice(e: React.FormEvent) {
+    e.preventDefault();
+    setMessage("Saving device...");
 
     let imageUrl = "";
 
-    if (imageFile) {
-      const fileExt = imageFile.name.split(".").pop();
-      const fileName = `${userId}-${Date.now()}.${fileExt}`;
+    if (image) {
+      const fileName = `${Date.now()}-${image.name}`;
 
       const { error: uploadError } = await supabase.storage
         .from("device-images")
-        .upload(fileName, imageFile);
+        .upload(fileName, image);
 
       if (uploadError) {
-        setLoading(false);
-        setMsg("Image upload failed: " + uploadError.message);
+        setMessage("Image upload failed: " + uploadError.message);
         return;
       }
 
-      const { data: publicUrlData } = supabase.storage
+      const { data } = supabase.storage
         .from("device-images")
         .getPublicUrl(fileName);
 
-      imageUrl = publicUrlData.publicUrl;
+      imageUrl = data.publicUrl;
+    }
+
+    const { data: userData } = await supabase.auth.getUser();
+
+    const userId = userData.user?.id;
+
+    if (!userId) {
+      setMessage("You must be logged in to save a device.");
+      return;
     }
 
     const { error } = await supabase.from("device_listing").insert([
       {
-        owner_id: userId,
         name,
-        device_type: deviceType,
         description,
-        size_notes: sizeNotes,
+        device_type: deviceType,
         city,
         condition,
-        availability_status: availabilityStatus,
+        manufacturer,
+        model_number: modelNumber,
         age_range: ageRange,
+        weight_limit: weightLimit,
+        availability_status: availabilityStatus,
+        pickup_notes: pickupNotes,
+        contact_method: contactMethod,
         image_url: imageUrl,
+        owner_id: userId,
       },
     ]);
 
-    setLoading(false);
-
     if (error) {
-      setMsg("Error: " + error.message);
+      setMessage("Error: " + error.message);
       return;
     }
 
-    setMsg("Saved successfully!");
-    router.push("/search");
-  }
-
-  async function handleSignOut() {
-    await supabase.auth.signOut();
-    router.push("/login");
+    setMessage("Device added successfully!");
+    setName("");
+    setDescription("");
+    setImage(null);
+    setPreview("");
   }
 
   return (
-    <main style={{
-      minHeight: "100vh",
-      backgroundColor: "#f4f9f6",
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      padding: "30px"
-    }}>
-      <div style={{
-        backgroundColor: "white",
-        padding: "40px",
-        borderRadius: "10px",
-        width: "100%",
-        maxWidth: "550px",
-        boxShadow: "0 5px 20px rgba(0,0,0,0.1)"
-      }}>
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <h2 style={{ color: "#006747" }}>Add Your Device</h2>
-          <button onClick={handleSignOut} style={{
-            background: "none",
-            border: "none",
-            color: "#006747",
-            cursor: "pointer"
-          }}>
-            Sign out
-          </button>
-        </div>
+    <main
+      style={{
+        minHeight: "100vh",
+        background: "#f0f2f1",
+        padding: "40px 20px",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: "700px",
+          margin: "0 auto",
+          background: "white",
+          padding: "32px",
+          borderRadius: "24px",
+          boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
+        }}
+      >
+        <h1 style={{ color: "#006747", marginTop: 0 }}>Add Device</h1>
+        <p style={{ color: "#475569" }}>
+          Add a rehabilitation device with a name, description, and image.
+        </p>
 
-        <input placeholder="Device name (required)" style={inputStyle} value={name} onChange={(e) => setName(e.target.value)} />
-        <input placeholder="Device type" style={inputStyle} value={deviceType} onChange={(e) => setDeviceType(e.target.value)} />
-        <textarea placeholder="Description" style={{ ...inputStyle, minHeight: "90px" }} value={description} onChange={(e) => setDescription(e.target.value)} />
-        <input placeholder="Size notes" style={inputStyle} value={sizeNotes} onChange={(e) => setSizeNotes(e.target.value)} />
-        <input placeholder="City" style={inputStyle} value={city} onChange={(e) => setCity(e.target.value)} />
-
-        <select style={inputStyle} value={condition} onChange={(e) => setCondition(e.target.value)}>
-          <option value="">Select condition</option>
-          <option value="new">New</option>
-          <option value="excellent">Excellent</option>
-          <option value="good">Good</option>
-          <option value="fair">Fair</option>
-          <option value="used">Used</option>
-        </select>
-
-        <select style={inputStyle} value={availabilityStatus} onChange={(e) => setAvailabilityStatus(e.target.value)}>
-          <option value="available">Available</option>
-          <option value="pending">Pending</option>
-          <option value="unavailable">Unavailable</option>
-          <option value="donated">Donated</option>
-        </select>
-
-        <input placeholder="Age range (example: 3-5 or 10-12)" style={inputStyle} value={ageRange} onChange={(e) => setAgeRange(e.target.value)} />
-
-        {/* 📎 CLIP STYLE UPLOAD */}
-        <div style={{ marginBottom: "16px" }}>
-          <label style={{ display: "block", marginBottom: "8px", fontWeight: 600 }}>
-            Upload device photo
-          </label>
-
-          <label htmlFor="device-photo" style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "8px",
-            padding: "10px 14px",
-            border: "1px dashed #006747",
-            borderRadius: "8px",
-            cursor: "pointer",
-            backgroundColor: "#f8f9fa"
-          }}>
-            <span>📎</span>
-            <span>Attach photo</span>
-          </label>
-
+        <form onSubmit={handleAddDevice}>
+          <label style={{ fontWeight: 700 }}>Device Name</label>
           <input
-            id="device-photo"
-            type="file"
-            accept="image/*"
-            onChange={handleFileChange}
-            style={{ display: "none" }}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            placeholder="Example: Pediatric Walker"
+            style={inputStyle}
           />
 
-          {imageFile && (
-            <p style={{ marginTop: "8px" }}>Selected: {imageFile.name}</p>
-          )}
+          <label style={{ fontWeight: 700 }}>Description</label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            required
+            placeholder="Describe the device, size, condition, and notes..."
+            rows={5}
+            style={inputStyle}
+          />
+
+          <label style={{ fontWeight: 700 }}>Upload Image</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            style={inputStyle}
+          />
+
+            <label>Device Type</label>
+            <input value={deviceType} onChange={(e) => setDeviceType(e.target.value)} style={inputStyle} />
+
+            <label>City</label>
+            <input value={city} onChange={(e) => setCity(e.target.value)} style={inputStyle} />
+
+            <label>Condition</label>
+            <input value={condition} onChange={(e) => setCondition(e.target.value)} style={inputStyle} />
+
+            <label>Manufacturer</label>
+            <input value={manufacturer} onChange={(e) => setManufacturer(e.target.value)} style={inputStyle} />
+
+            <label>Model Number</label>
+            <input value={modelNumber} onChange={(e) => setModelNumber(e.target.value)} style={inputStyle} />
+
+            <label>Age Range</label>
+            <input value={ageRange} onChange={(e) => setAgeRange(e.target.value)} style={inputStyle} />
+
+            <label>Weight Limit</label>
+            <input value={weightLimit} onChange={(e) => setWeightLimit(e.target.value)} style={inputStyle} />
+
+            <label>Availability Status</label>
+            <input value={availabilityStatus} onChange={(e) => setAvailabilityStatus(e.target.value)} style={inputStyle} />
+
+            <label>Pickup Notes</label>
+            <textarea value={pickupNotes} onChange={(e) => setPickupNotes(e.target.value)} style={inputStyle} />
+
+            <label>Contact Method</label>
+            <input value={contactMethod} onChange={(e) => setContactMethod(e.target.value)} style={inputStyle} />
 
           {preview && (
-            <img src={preview} style={{
-              width: "100%",
-              maxHeight: "200px",
-              objectFit: "cover",
-              marginTop: "10px",
-              borderRadius: "8px"
-            }} />
+            <img
+              src={preview}
+              alt="Preview"
+              style={{
+                width: "100%",
+                maxHeight: "280px",
+                objectFit: "cover",
+                borderRadius: "16px",
+                marginTop: "12px",
+                border: "1px solid #ddd",
+              }}
+            />
           )}
-        </div>
 
-        <button onClick={addDevice} disabled={loading} style={{
-          width: "100%",
-          padding: "12px",
-          backgroundColor: "#006747",
-          color: "white",
-          border: "none",
-          borderRadius: "6px",
-          cursor: "pointer"
-        }}>
-          {loading ? "Saving..." : "Save Device"}
-        </button>
+          <button
+            type="submit"
+            style={{
+              marginTop: "20px",
+              width: "100%",
+              padding: "16px",
+              borderRadius: "14px",
+              border: "none",
+              background: "#006747",
+              color: "white",
+              fontSize: "18px",
+              fontWeight: 700,
+              cursor: "pointer",
+            }}
+          >
+            Save Device
+          </button>
+        </form>
 
-        {msg && <p style={{ marginTop: "10px" }}>{msg}</p>}
+        {message && (
+          <p style={{ marginTop: "16px", fontWeight: 700, color: "#006747" }}>
+            {message}
+          </p>
+        )}
       </div>
     </main>
   );
 }
 
-const inputStyle = {
+const inputStyle: React.CSSProperties = {
   width: "100%",
-  padding: "10px",
-  marginBottom: "12px",
-  borderRadius: "6px",
-  border: "1px solid #ccc"
+  padding: "14px",
+  marginTop: "8px",
+  marginBottom: "18px",
+  borderRadius: "12px",
+  border: "1px solid #cbd5e1",
+  fontSize: "16px",
 };
