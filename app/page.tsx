@@ -107,7 +107,11 @@ function toggleListening() {
                 }}
               />
 
-              <button onClick={handleSearch} style={styles.findBtn}>
+              <button
+                type="button"
+                onClick={() => handleSearch()}
+                style={styles.findBtn}
+              >
                 SEARCH
               </button>
             </div>
