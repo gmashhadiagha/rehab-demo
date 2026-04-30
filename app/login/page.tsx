@@ -22,7 +22,7 @@ export default function LoginPage() {
       setMsg("Error: " + error.message);
     } else {
       setMsg("Success. Redirecting...");
-      router.push("/dashboard");
+      router.push("/my-account");
     }
   }
 
@@ -35,8 +35,8 @@ export default function LoginPage() {
             alt="CSU Viking" 
             style={styles.vikingLogo} 
           />
-          <h1 style={styles.title}>CSU Rehab Directory</h1>
-          <p style={styles.subtitle}>Login to manage pediatric equipment</p>
+          <h1 style={styles.title}>Move and Play</h1>
+          <p style={styles.subtitle}>Login to manage pediatric equipments</p>
         </header>
 
         <div style={styles.form}>

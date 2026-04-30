@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { supabase } from "../lib/supabaseClient";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function Navbar() {
   const router = useRouter();
@@ -43,12 +44,26 @@ export default function Navbar() {
         <button onClick={handleLogout} style={logoutStyle}>
           Sign Out
         </button>
+         <Link href="/login" style={linkStyle}>
+        Sign In
+      </Link>
+
+      <Link href="/signup" style={addButtonStyle}>
+        Sign Up
+      </Link>
       </div>
 
     </nav>
   );
 }
 
+const [user, setUser] = useState<any>(null);
+
+useEffect(() => {
+  supabase.auth.getUser().then(({ data }) => {
+    setUser(data.user);
+  });
+}, []);
 const navStyle: React.CSSProperties = {
   display: "flex",
   justifyContent: "space-between",
