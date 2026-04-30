@@ -7,6 +7,13 @@ import { useEffect, useState } from "react";
 
 export default function Navbar() {
   const router = useRouter();
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data.user);
+    });
+  }, []);
 
   async function handleLogout() {
     await supabase.auth.signOut();
@@ -57,13 +64,7 @@ export default function Navbar() {
   );
 }
 
-const [user, setUser] = useState<any>(null);
 
-useEffect(() => {
-  supabase.auth.getUser().then(({ data }) => {
-    setUser(data.user);
-  });
-}, []);
 const navStyle: React.CSSProperties = {
   display: "flex",
   justifyContent: "space-between",
