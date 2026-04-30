@@ -8,22 +8,31 @@ export default function HomePage() {
   const [results, setResults] = useState<any[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
 
-  async function handleSearch() {
-  setHasSearched(true);
+  async function handleSearch(searchText?: string) {
+    setHasSearched(true);
 
-  const { data, error } = await supabase
-    .from("device_listing")
-    .select("*")
-    .ilike("name", `%${smartInput}%`);
+    const q = (searchText ?? smartInput).trim();
 
-  if (error) {
-    console.error(error);
-    setResults([]);
-    return;
+    if (!q) {
+      setResults([]);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("device_listing")
+      .select("*")
+      .or(
+        `name.ilike.%${q}%,description.ilike.%${q}%,device_type.ilike.%${q}%,city.ilike.%${q}%,condition.ilike.%${q}%,manufacturer.ilike.%${q}%`
+      );
+
+    if (error) {
+      alert("Search error: " + error.message);
+      setResults([]);
+      return;
+    }
+
+    setResults(data || []);
   }
-
-  setResults(data || []);
-}
 
 
 
@@ -37,16 +46,27 @@ function toggleListening() {
       return;
     }
 
-    const recognition = new SpeechRec();
+  const recognition = new SpeechRec();
 
-    recognition.onresult = (e: any) => {
+    recognition.lang = "en-US";
+    recognition.interimResults = false;
+    recognition.continuous = false;
+
+    recognition.onresult = async (e: any) => {
       const transcript = e.results[0][0].transcript;
+
       setSmartInput(transcript);
+
+      // 🔥 THIS is what you were missing
+      await handleSearch(transcript);
+    };
+
+    recognition.onerror = (e: any) => {
+      alert("Mic error: " + e.error);
     };
 
     recognition.start();
   }
-
   
 
   return (
@@ -100,7 +120,35 @@ function toggleListening() {
                 No matching devices found. Try “walker,” “stander,” or “Cleveland.”
               </p>
             )}
-          </section>
+
+            {results.length > 0 && (
+              <div>
+                {results.map((device) => (
+                  <div key={device.id} style={styles.resultCard}>
+                    {device.image_url && (
+                      <img
+                        src={device.image_url}
+                        alt={device.name}
+                        style={{
+                          width: "100%",
+                          maxHeight: "180px",
+                          objectFit: "cover",
+                          borderRadius: "12px",
+                          marginBottom: "10px",
+                        }}
+                      />
+                    )}
+
+          <h3>{device.name}</h3>
+          <p><strong>Type:</strong> {device.device_type}</p>
+          <p><strong>City:</strong> {device.city}</p>
+          <p><strong>Condition:</strong> {device.condition}</p>
+          <p>{device.description}</p>
+        </div>
+      ))}
+    </div>
+  )}
+</section>
 
         </div>
 
