@@ -106,7 +106,7 @@ const addButtonStyle: React.CSSProperties = {
 };
 
 const logoutStyle: React.CSSProperties = {
-  background: "#eee",
+  background:"#ff4d4d" ,
   border: "none",
   borderRadius: "20px",
   padding: "6px 12px",

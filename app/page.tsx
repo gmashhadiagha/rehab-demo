@@ -118,12 +118,18 @@ function toggleListening() {
           </section>
 
           {/* Results */}
+          
+
+        </div>
+      </div>
+
+        {hasSearched && (
           <section style={styles.resultsSection}>
-            {hasSearched && results.length === 0 && (
+            
               <p style={styles.emptyText}>
                 No matching devices found. Try “walker,” “stander,” or “Cleveland.”
               </p>
-            )}
+            
 
             {results.length > 0 && (
               <div style={styles.resultsGrid}>
@@ -159,13 +165,9 @@ function toggleListening() {
               </div>
             )}
           </section>
-
-        </div>
-
-        {/* RIGHT SIDE LOGO */}
   
-
-      </div>
+      )}
+      
 
       {/* FOOTER */}
       <footer style={styles.innerFooter}>
@@ -192,6 +194,57 @@ const styles: Record<string, React.CSSProperties> = {
     maxWidth: "1300px",
     marginTop: "60px",
   },
+
+  resultsSection: {
+    width: "100%",
+    padding: "40px 60px",
+    backgroundColor: "#f7fff9",
+    boxSizing: "border-box",
+    marginTop: "20px",
+    borderTop: "3px solid #006747",
+  },
+
+    resultsGrid: {
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+      gap: "24px",
+      width: "100%",
+    },
+    resultCard: {
+      backgroundColor: "white",
+      border: "2px solid #006747",
+      borderRadius: "18px",
+      padding: "18px",
+      boxShadow: "0 6px 16px rgba(0,0,0,0.12)",
+    },
+
+    resultImage: {
+      width: "100%",
+      height: "190px",
+      objectFit: "contain",
+      borderRadius: "12px",
+      marginBottom: "12px",
+      backgroundColor: "#f5f5f5",
+    },
+
+    noImage: {
+      width: "100%",
+      height: "190px",
+      borderRadius: "12px",
+      marginBottom: "12px",
+      backgroundColor: "#eef5ef",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      color: "#555",
+      fontWeight: "bold",
+    },
+
+    resultTitle: {
+      color: "#006747",
+      fontSize: "22px",
+      marginBottom: "10px",
+    },
 
   container: {
     width: "650px",
@@ -253,53 +306,7 @@ const styles: Record<string, React.CSSProperties> = {
     cursor: "pointer",
   },
 
-  resultsSection: {
-    width: "100%",
-    padding: "40px 60px",
-    backgroundColor: "#f7fff9",
-  },
-
-  resultsGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-    gap: "24px",
-    width: "100%",
-  },
-  resultCard: {
-    backgroundColor: "white",
-    border: "2px solid #006747",
-    borderRadius: "18px",
-    padding: "18px",
-    boxShadow: "0 6px 16px rgba(0,0,0,0.12)",
-  },
-
-  resultImage: {
-    width: "100%",
-    height: "190px",
-    objectFit: "contain",
-    borderRadius: "12px",
-    marginBottom: "12px",
-    backgroundColor: "#f5f5f5",
-  },
-
-  noImage: {
-    width: "100%",
-    height: "190px",
-    borderRadius: "12px",
-    marginBottom: "12px",
-    backgroundColor: "#eef5ef",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    color: "#555",
-    fontWeight: "bold",
-  },
-
-  resultTitle: {
-    color: "#006747",
-    fontSize: "22px",
-    marginBottom: "10px",
-  },
+  
 
   emptyText: {
     textAlign: "center",
